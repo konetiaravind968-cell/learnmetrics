@@ -1,6 +1,6 @@
 [E-Learning_Course_Analytics_System_Flask_Code.pdf](https://github.com/user-attachments/files/34318297/E-Learning_Course_Analytics_System_Flask_Code.pdf)
 %PDF-1.4
-%���� ReportLab Generated PDF document http://www.reportlab.com
+%���� ReportLab Generated PDF document 
 1 0 obj
 <<
 /F1 2 0 R /F2 3 0 R /F3 4 0 R /F4 5 0 R
