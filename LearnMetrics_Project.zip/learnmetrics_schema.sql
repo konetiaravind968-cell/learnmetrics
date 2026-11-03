@@ -1,0 +1,57 @@
+CREATE DATABASE IF NOT EXISTS learnmetrics CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE learnmetrics;
+CREATE TABLE IF NOT EXISTS users (
+ id INT AUTO_INCREMENT PRIMARY KEY, full_name VARCHAR(120) NOT NULL,
+ email VARCHAR(190) NOT NULL UNIQUE, password_hash VARCHAR(255) NOT NULL,
+ role ENUM('admin','staff','student') NOT NULL DEFAULT 'student',
+ active TINYINT(1) NOT NULL DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS students (
+ id INT AUTO_INCREMENT PRIMARY KEY, student_code VARCHAR(40) NOT NULL UNIQUE,
+ full_name VARCHAR(120) NOT NULL, email VARCHAR(190) NOT NULL UNIQUE,
+ department VARCHAR(100) DEFAULT 'CSE', semester INT DEFAULT 1,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS staff (
+ id INT AUTO_INCREMENT PRIMARY KEY, staff_code VARCHAR(40) NOT NULL UNIQUE,
+ full_name VARCHAR(120) NOT NULL, email VARCHAR(190) NOT NULL UNIQUE,
+ department VARCHAR(100) DEFAULT 'CSE', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS courses (
+ id INT AUTO_INCREMENT PRIMARY KEY, course_code VARCHAR(40) NOT NULL UNIQUE,
+ title VARCHAR(180) NOT NULL, description TEXT, instructor_id INT NULL,
+ duration_hours DECIMAL(8,2) NOT NULL DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ CONSTRAINT fk_course_staff FOREIGN KEY (instructor_id) REFERENCES staff(id) ON DELETE SET NULL
+);
+CREATE TABLE IF NOT EXISTS enrollments (
+ id INT AUTO_INCREMENT PRIMARY KEY, student_id INT NOT NULL, course_id INT NOT NULL,
+ enrolled_on DATE NOT NULL, status ENUM('enrolled','completed','dropped') NOT NULL DEFAULT 'enrolled',
+ progress DECIMAL(5,2) NOT NULL DEFAULT 0, UNIQUE KEY uq_enrollment(student_id,course_id),
+ FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+ FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS lessons (
+ id INT AUTO_INCREMENT PRIMARY KEY, course_id INT NOT NULL, title VARCHAR(180) NOT NULL,
+ lesson_type VARCHAR(40) NOT NULL DEFAULT 'video', duration_minutes INT NOT NULL DEFAULT 0,
+ sort_order INT NOT NULL DEFAULT 1, FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS attendance (
+ id INT AUTO_INCREMENT PRIMARY KEY, student_id INT NOT NULL, course_id INT NOT NULL,
+ attendance_date DATE NOT NULL, status ENUM('present','absent','late') NOT NULL DEFAULT 'present',
+ UNIQUE KEY uq_attendance(student_id,course_id,attendance_date),
+ FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+ FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS lesson_progress (
+ id INT AUTO_INCREMENT PRIMARY KEY, student_id INT NOT NULL, lesson_id INT NOT NULL,
+ completed TINYINT(1) NOT NULL DEFAULT 0, watched_minutes INT NOT NULL DEFAULT 0,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ UNIQUE KEY uq_lesson_progress(student_id,lesson_id),
+ FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+ FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE
+);
+
+GRANT ALL PRIVILEGES ON learnmetrics.* TO 'elearning_user'@'localhost';
+FLUSH PRIVILEGES;
+
+SHOW TABLES;

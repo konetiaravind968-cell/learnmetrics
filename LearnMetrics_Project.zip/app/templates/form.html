@@ -1,0 +1,76 @@
+
+{% extends "base.html" %}
+{% from '_m.html' import field %}
+
+{% block title %}{{ title }} | LearnMetrics{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8 col-xl-7">
+
+            <!-- Breadcrumb / Back Link -->
+            <div class="mb-3">
+                <a href="{{ back }}"
+                   class="text-decoration-none text-muted small">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Back
+                </a>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-header bg-transparent border-0 px-4 pt-4 pb-0">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-pencil-square fs-3"></i>
+                        </div>
+
+                        <div>
+                            <h4 class="fw-bold mb-1">{{ title|title }}</h4>
+                            <p class="text-muted small mb-0">
+                                Enter the required information and save your changes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form method="post">
+                        {{ csrf() }}
+
+                        {% for f in fields %}
+                            {{ field(f, vals.get(f.n)) }}
+                        {% endfor %}
+
+                        <hr class="my-4">
+
+                        <div class="d-flex flex-wrap gap-2 justify-content-end">
+                            <a href="{{ back }}"
+                               class="btn btn-outline-secondary px-4">
+                                Cancel
+                            </a>
+
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check2-circle me-2"></i>
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+
+            <p class="text-muted small mt-3 text-center">
+                <i class="bi bi-shield-check me-1"></i>
+                Please review the information before saving.
+            </p>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+```

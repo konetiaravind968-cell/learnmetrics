@@ -1,0 +1,387 @@
+
+{% extends "base.html" %}
+{% from '_m.html' import bar %}
+
+{% block title %}My Dashboard | LearnMetrics{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+    <!-- Welcome Header -->
+    <div class="card border-0 shadow-sm mb-4"
+         style="border-radius: 18px; overflow: hidden;">
+        <div class="card-body p-4 p-lg-5"
+             style="background: linear-gradient(135deg, #172554, #4338ca); color: white;">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <span class="badge rounded-pill px-3 py-2 mb-3"
+                          style="background: rgba(255,255,255,.15);">
+                        <i class="bi bi-stars me-1"></i>
+                        Student learning space
+                    </span>
+
+                    <h2 class="fw-bold mb-2">
+                        Hello, {{ profile.full_name }}!
+                    </h2>
+
+                    <p class="mb-3"
+                       style="color: rgba(255,255,255,.8);">
+                        Welcome back. Keep learning and make progress every day.
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge rounded-pill px-3 py-2"
+                              style="background: rgba(255,255,255,.15);">
+                            <i class="bi bi-person-badge me-1"></i>
+                            {{ profile.student_code }}
+                        </span>
+
+                        <span class="badge rounded-pill px-3 py-2"
+                              style="background: rgba(255,255,255,.15);">
+                            <i class="bi bi-building me-1"></i>
+                            {{ profile.department }}
+                        </span>
+
+                        <span class="badge rounded-pill px-3 py-2"
+                              style="background: rgba(255,255,255,.15);">
+                            <i class="bi bi-mortarboard me-1"></i>
+                            Semester {{ profile.semester }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="rounded-4 p-3"
+                     style="background: rgba(255,255,255,.12);">
+                    <i class="bi bi-person-workspace"
+                       style="font-size: 3.5rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Statistics -->
+    <div class="row g-3 mb-4">
+
+        {% for label, v in [
+            ('Courses', stats.courses),
+            ('Completed', stats.done),
+            ('Minutes learned', stats.minutes),
+            ('Day streak 🔥', stats.streak),
+            ('Avg quiz %', stats.avg if stats.avg is not none else '-')
+        ] %}
+
+        <div class="col-6 col-md-4 col-xl">
+            <div class="card border-0 shadow-sm h-100"
+                 style="border-radius: 15px;">
+                <div class="card-body p-3 p-lg-4">
+                    <div class="text-muted small mb-2">{{ label }}</div>
+                    <div class="fw-bold"
+                         style="font-size: 1.8rem; color: #312e81;">
+                        {{ v }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- Continue Learning -->
+    {% if nxt %}
+    <div class="card border-0 shadow-sm mb-4"
+         style="border-radius: 16px; overflow: hidden;">
+        <div class="card-body p-4"
+             style="background: linear-gradient(110deg, #eef2ff, #f0f9ff);">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 p-3"
+                         style="background: white; color: #4338ca;">
+                        <i class="bi bi-play-circle-fill fs-3"></i>
+                    </div>
+
+                    <div>
+                        <div class="small text-primary fw-semibold mb-1">
+                            PICK UP WHERE YOU LEFT OFF
+                        </div>
+
+                        <h5 class="fw-bold mb-1">Continue learning</h5>
+
+                        <p class="text-muted mb-0">
+                            {{ nxt.course }}: {{ nxt.title }}
+                        </p>
+                    </div>
+                </div>
+
+                <a class="btn btn-primary px-4"
+                   href="{{ url_for('student.lesson', lid=nxt.lid) }}"
+                   style="border-radius: 10px;">
+                    <i class="bi bi-play-fill me-1"></i>
+                    Start learning
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Dashboard Content -->
+    <div class="row g-4">
+
+        <!-- My Courses -->
+        <div class="col-xl-7">
+            <div class="card border-0 shadow-sm h-100"
+                 style="border-radius: 16px; overflow: hidden;">
+
+                <div class="card-header bg-transparent border-0 p-4 pb-2">
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-1">
+                                <i class="bi bi-journals me-2 text-primary"></i>
+                                My courses
+                            </h5>
+                            <p class="text-muted small mb-0">
+                                Track lessons and continue your course journey.
+                            </p>
+                        </div>
+
+                        <a href="{{ url_for('student.courses') }}"
+                           class="btn btn-sm btn-outline-primary">
+                            Browse courses
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 pt-3">
+
+                    {% for c in cs %}
+                    <div class="border rounded-3 p-3 mb-3">
+
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                            <div>
+                                <a class="text-decoration-none"
+                                   href="{{ url_for('student.course', cid=c.id) }}">
+                                    <h6 class="fw-bold mb-1">{{ c.title }}</h6>
+                                </a>
+
+                                <span class="small text-muted">
+                                    <i class="bi bi-book me-1"></i>
+                                    {{ c.done }}/{{ c.total }} lessons completed
+                                </span>
+                            </div>
+
+                            <span class="badge rounded-pill text-bg-light border">
+                                {{ c.status }}
+                            </span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center small mb-2">
+                            <span class="text-muted">Course progress</span>
+                            <span class="fw-bold">{{ c.percent }}%</span>
+                        </div>
+
+                        {{ bar(c.percent) }}
+
+                        <div class="d-flex justify-content-between align-items-center gap-2 mt-3">
+                            <span class="small text-muted">
+                                <i class="bi bi-clock me-1"></i>
+                                {{ c.minutes }} minutes learned
+                            </span>
+
+                            <a href="{{ url_for('student.course', cid=c.id) }}"
+                               class="small fw-semibold text-decoration-none">
+                                Open course
+                                <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3"
+                             style="width: 76px; height: 76px; background: #eef2ff; color: #4338ca;">
+                            <i class="bi bi-journal-plus display-6"></i>
+                        </div>
+
+                        <h6 class="fw-bold">Start your learning journey</h6>
+
+                        <p class="text-muted small">
+                            You are not enrolled in any courses yet.
+                        </p>
+
+                        <a href="{{ url_for('student.courses') }}"
+                           class="btn btn-primary"
+                           style="border-radius: 10px;">
+                            <i class="bi bi-search me-2"></i>
+                            Browse courses
+                        </a>
+                    </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Learning Activity and Quiz Results -->
+        <div class="col-xl-5">
+
+            <!-- Activity Chart -->
+            <div class="card border-0 shadow-sm mb-4"
+                 style="border-radius: 16px;">
+                <div class="card-body p-4">
+
+                    <h5 class="fw-bold mb-1">
+                        <i class="bi bi-activity me-2 text-primary"></i>
+                        Learning activity
+                    </h5>
+
+                    <p class="text-muted small mb-4">
+                        Lessons completed during the last 14 days.
+                    </p>
+
+                    <div style="position: relative; height: 250px;">
+                        <canvas id="c1"
+                                aria-label="Lessons completed over the last 14 days"
+                                role="img"></canvas>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Recent Quiz Results -->
+            <div class="card border-0 shadow-sm"
+                 style="border-radius: 16px;">
+
+                <div class="card-header bg-transparent border-0 p-4 pb-2">
+                    <h5 class="fw-bold mb-1">
+                        <i class="bi bi-patch-check me-2 text-primary"></i>
+                        Recent quiz results
+                    </h5>
+
+                    <p class="text-muted small mb-0">
+                        Review your latest quiz attempts and scores.
+                    </p>
+                </div>
+
+                <div class="card-body p-4 pt-2">
+
+                    {% for a in att %}
+                    <a href="{{ url_for('student.attempt', aid=a.id) }}"
+                       class="d-flex align-items-center gap-3 text-decoration-none border rounded-3 p-3 mb-2 quiz-result">
+
+                        <div class="rounded-3 p-2 flex-shrink-0"
+                             style="background: #eef2ff; color: #4338ca;">
+                            <i class="bi bi-file-earmark-check fs-5"></i>
+                        </div>
+
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold mb-1">{{ a.title }}</div>
+                            <div class="small text-muted">
+                                {{ a.attempted_at|dt }}
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <div class="fw-bold"
+                                 style="color: #4338ca;">
+                                {{ a.percentage }}%
+                            </div>
+                            <div class="small text-muted">Score</div>
+                        </div>
+
+                    </a>
+
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-clipboard-data display-5 text-muted"></i>
+                        <h6 class="mt-3">No quiz results yet</h6>
+                        <p class="text-muted small mb-0">
+                            Take a course quiz to see your results here.
+                        </p>
+                    </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .quiz-result {
+        color: inherit;
+        transition: background-color .2s, border-color .2s;
+    }
+
+    .quiz-result:hover {
+        background: #f8faff;
+        border-color: #a5b4fc !important;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+<script>
+(() => {
+    const canvas = document.getElementById('c1');
+    if (!canvas) return;
+
+    const d = {{ data|tojson }};
+
+    new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: d.days || [],
+            datasets: [{
+                label: 'Lessons completed',
+                data: d.daily || [],
+                borderColor: '#4f46e5',
+                backgroundColor: 'rgba(79, 70, 229, 0.12)',
+                fill: true,
+                tension: 0.35,
+                pointRadius: 3,
+                pointHoverRadius: 6,
+                pointBackgroundColor: '#4338ca',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: context => `${context.parsed.y} lessons completed`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    },
+                    grid: {
+                        color: 'rgba(148, 163, 184, 0.15)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+})();
+</script>
+{% endblock %}
+```

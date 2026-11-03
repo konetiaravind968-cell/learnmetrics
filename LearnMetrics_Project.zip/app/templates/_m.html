@@ -1,0 +1,118 @@
+
+{% macro bar(p) %}
+  {% set progress = [[p|float, 0]|max, 100]|min %}
+  <div class="progress modern-progress" role="progressbar"
+       aria-valuenow="{{ progress|round|int }}"
+       aria-valuemin="0" aria-valuemax="100"
+       aria-label="Course progress"
+       style="height: 18px;">
+    <div class="progress-bar progress-bar-striped"
+         style="width: {{ progress }}%;">
+      {{ progress|round|int }}%
+    </div>
+  </div>
+{% endmacro %}
+
+
+{% macro pager(page, pages, prev, nxt) %}
+  {% if pages > 1 %}
+    <nav class="d-flex flex-wrap gap-3 align-items-center justify-content-between mt-4"
+         aria-label="Pagination">
+
+      <div class="d-flex align-items-center gap-2">
+        {% if prev %}
+          <a class="btn btn-sm btn-outline-primary rounded-pill px-3"
+             href="{{ prev }}">
+            &laquo; Previous
+          </a>
+        {% endif %}
+      </div>
+
+      <span class="small text-secondary">
+        Page <strong>{{ page }}</strong> of
+        <strong>{{ pages }}</strong>
+      </span>
+
+      <div class="d-flex align-items-center gap-2">
+        {% if nxt %}
+          <a class="btn btn-sm btn-primary rounded-pill px-3"
+             href="{{ nxt }}">
+            Next &raquo;
+          </a>
+        {% endif %}
+      </div>
+
+    </nav>
+  {% endif %}
+{% endmacro %}
+
+
+{% macro field(f, v) %}
+  <div class="mb-3">
+
+    {% if f.t == 'checkbox' %}
+
+      <div class="form-check form-switch">
+        <input class="form-check-input"
+               type="checkbox"
+               role="switch"
+               name="{{ f.n }}"
+               id="{{ f.n }}"
+               value="1"
+               {% if v %}checked{% endif %}>
+
+        <label class="form-check-label fw-medium"
+               for="{{ f.n }}">
+          {{ f.l }}
+        </label>
+      </div>
+
+    {% else %}
+
+      <label class="form-label fw-semibold"
+             for="{{ f.n }}">
+        {{ f.l }}
+        {% if f.r %}
+          <span class="text-danger">*</span>
+        {% endif %}
+      </label>
+
+      {% if f.t == 'select' %}
+
+        <select class="form-select rounded-3"
+                name="{{ f.n }}"
+                id="{{ f.n }}"
+                {% if f.r %}required{% endif %}>
+
+          {% for val, lab in f.o %}
+            <option value="{{ val }}"
+                    {% if (v|string) == (val|string) %}selected{% endif %}>
+              {{ lab }}
+            </option>
+          {% endfor %}
+
+        </select>
+
+      {% elif f.t == 'textarea' %}
+
+        <textarea class="form-control rounded-3"
+                  rows="4"
+                  name="{{ f.n }}"
+                  id="{{ f.n }}"
+                  {% if f.r %}required{% endif %}>{{ v or '' }}</textarea>
+
+      {% else %}
+
+        <input
+          class="form-control rounded-3"
+          type="{{ 'number' if f.t == 'number' else ('email' if f.t == 'email' else ('url' if f.t == 'url' else 'text')) }}"
+          {% if f.t == 'number' %}step="any"{% endif %}
+          name="{{ f.n }}"
+          id="{{ f.n }}"
+          value="{{ '' if v is none else v }}"
+          {% if f.r %}required{% endif %}>
+
+      {% endif %}
+    {% endif %}
+  </div>
+{% endmacro %}

@@ -1,0 +1,230 @@
+
+{% extends "base.html" %}
+{% from '_m.html' import field %}
+
+{% block title %}{{ z.title }} | Quiz Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+    <!-- Back Navigation -->
+    <div class="mb-3">
+        <a href="{{ url_for('course.manage', cid=z.course_id) }}"
+           class="text-decoration-none text-muted">
+            <i class="bi bi-arrow-left me-2"></i>
+            Back to Course
+        </a>
+    </div>
+
+    <!-- Quiz Header -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <span class="badge rounded-pill text-bg-primary mb-2">
+                        <i class="bi bi-patch-question me-1"></i>
+                        Quiz Management
+                    </span>
+                    <h2 class="fw-bold mb-1">{{ z.title }}</h2>
+                    <p class="text-muted mb-0">
+                        Manage questions and review student answer statistics.
+                    </p>
+                </div>
+
+                <div class="rounded-3 bg-success bg-opacity-10 p-3 text-center">
+                    <div class="small text-muted">Pass Mark</div>
+                    <div class="fs-3 fw-bold text-success">
+                        {{ z.pass_percent }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Questions and Analytics -->
+        <div class="col-12 col-xl-7">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                <div class="card-header bg-transparent border-0 px-4 pt-4">
+                    <h5 class="fw-bold mb-1">Questions & Student Analytics</h5>
+                    <p class="text-muted small mb-0">
+                        Review correct answers and student performance.
+                    </p>
+                </div>
+
+                <div class="card-body p-4">
+
+                    {% for q in qs %}
+                    <div class="border rounded-3 p-3 mb-3">
+
+                        <div class="d-flex justify-content-between align-items-start gap-3">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="badge rounded-pill text-bg-primary">
+                                        Q{{ loop.index }}
+                                    </span>
+                                    <h6 class="fw-bold mb-2">
+                                        {{ q.question_text }}
+                                    </h6>
+                                </div>
+
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    <span class="badge text-bg-light border">
+                                        {{ q.marks }} mark{{ 's' if q.marks != 1 }}
+                                    </span>
+
+                                    <span class="badge text-bg-success">
+                                        Correct option: {{ q.correct_option }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Answer Statistics -->
+                        <div class="rounded-3 bg-light p-3 mb-3">
+                            {% if q.answered %}
+                            <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                                <span class="small text-muted">Correct answer rate</span>
+                                <strong>{{ q.pct }}%</strong>
+                            </div>
+
+                            <div class="progress"
+                                 role="progressbar"
+                                 aria-label="Correct answer rate"
+                                 aria-valuenow="{{ [[q.pct|int, 0]|max, 100]|min }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"
+                                 style="height: 8px;">
+                                <div class="progress-bar bg-success"
+                                     style="width: {{ [[q.pct|int, 0]|max, 100]|min }}%;">
+                                </div>
+                            </div>
+
+                            <small class="text-muted d-block mt-2">
+                                <i class="bi bi-people me-1"></i>
+                                Answered {{ q.answered }} time{{ 's' if q.answered != 1 }}
+                            </small>
+                            {% else %}
+                            <span class="text-muted small">
+                                <i class="bi bi-hourglass me-1"></i>
+                                Not attempted yet
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Question Actions -->
+                        <div class="d-flex flex-wrap gap-2">
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{{ url_for('course.quiz_manage', qid=z.id, question=q.id) }}">
+                                <i class="bi bi-pencil me-1"></i>
+                                Edit
+                            </a>
+
+                            <form method="post"
+                                  action="{{ url_for('course.question_delete', xid=q.id) }}"
+                                  data-confirm="Delete this question?"
+                                  class="d-inline">
+                                {{ csrf() }}
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash me-1"></i>
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-patch-question display-4 text-muted"></i>
+                        <h6 class="fw-bold mt-3">No questions added yet</h6>
+                        <p class="text-muted mb-0">
+                            Use the form to create the first quiz question.
+                        </p>
+                    </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Add / Edit Question -->
+        <div class="col-12 col-xl-5">
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-header bg-transparent border-0 px-4 pt-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-plus-square fs-3"></i>
+                        </div>
+
+                        <div>
+                            <h5 class="fw-bold mb-1">
+                                {{ 'Edit Question' if edit else 'Add Question' }}
+                            </h5>
+                            <p class="text-muted small mb-0">
+                                Configure the question and its answer.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form method="post"
+                          action="{{ url_for('course.question_save', qid=z.id) }}">
+                        {{ csrf() }}
+
+                        {% if edit %}
+                        <input type="hidden" name="id" value="{{ edit.id }}">
+                        {% endif %}
+
+                        {% for f in qf %}
+                            {{ field(f, vals.get(f.n)) }}
+                        {% endfor %}
+
+                        <div class="d-flex flex-wrap gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check2-circle me-2"></i>
+                                Save Question
+                            </button>
+
+                            {% if edit %}
+                            <a class="btn btn-outline-secondary"
+                               href="{{ url_for('course.quiz_manage', qid=z.id) }}">
+                                Cancel
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Guide -->
+            <div class="card border-0 bg-primary bg-opacity-10 mt-4 rounded-4">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        Question Management Tips
+                    </h6>
+                    <ul class="small mb-0 ps-3">
+                        <li class="mb-2">
+                            Write clear and specific questions.
+                        </li>
+                        <li class="mb-2">
+                            Verify the correct option before saving.
+                        </li>
+                        <li>
+                            Review answer rates to identify difficult questions.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+```

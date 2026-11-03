@@ -1,0 +1,361 @@
+
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | LearnMetrics{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+
+  <!-- Dashboard Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <span class="text-primary fw-semibold small text-uppercase">
+        LearnMetrics Analytics
+      </span>
+      <h2 class="fw-bold mb-1 mt-1">Platform Overview</h2>
+      <p class="text-secondary mb-0">
+        Monitor student engagement, course progress and quiz performance.
+      </p>
+    </div>
+    <div class="badge rounded-pill text-bg-primary px-3 py-2">
+      <span class="me-1">●</span> Admin Dashboard
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div class="row g-3 mb-4">
+    {% for label, v in [
+      ('Students', t.students),
+      ('Staff', t.staff),
+      ('Courses', t.courses),
+      ('Active Enrollments', t.enrollments),
+      ('Lessons Completed', t.lessons_done),
+      ('Average Quiz Score', t.avg_score)
+    ] %}
+
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card h-100 border-0 shadow-sm rounded-4 stat-card">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <span class="small text-secondary">{{ label }}</span>
+            <span class="stat-icon">
+              {% if loop.index == 1 %}👨‍🎓
+              {% elif loop.index == 2 %}👨‍🏫
+              {% elif loop.index == 3 %}📚
+              {% elif loop.index == 4 %}🎯
+              {% elif loop.index == 5 %}✅
+              {% else %}📊
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="fs-3 fw-bold text-dark">
+            {% if loop.index == 6 and v is not none %}
+              {{ v }}%
+            {% else %}
+              {{ v if v is not none else 0 }}
+            {% endif %}
+          </div>
+
+          <div class="small text-secondary mt-1">
+            {{ label }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% endfor %}
+  </div>
+
+  <!-- Analytics Charts -->
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <span class="fs-4">📈</span>
+    <div>
+      <h5 class="fw-bold mb-0">Learning Analytics</h5>
+      <p class="small text-secondary mb-0">
+        Visual insights into courses and student activity
+      </p>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+
+    <div class="col-12 col-lg-6">
+      <div class="card h-100 border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <h6 class="fw-bold mb-1">Enrollments per Course</h6>
+          <p class="small text-secondary mb-3">
+            Student enrollment distribution
+          </p>
+          <div style="position:relative;height:280px;">
+            <canvas id="c1"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card h-100 border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <h6 class="fw-bold mb-1">Course Completion Rate</h6>
+          <p class="small text-secondary mb-3">
+            Completion percentage by course
+          </p>
+          <div style="position:relative;height:280px;">
+            <canvas id="c2"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card h-100 border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <h6 class="fw-bold mb-1">Daily Lesson Completions</h6>
+          <p class="small text-secondary mb-3">
+            Learning activity over the last 14 days
+          </p>
+          <div style="position:relative;height:280px;">
+            <canvas id="c3"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card h-100 border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <h6 class="fw-bold mb-1">Average Quiz Performance</h6>
+          <p class="small text-secondary mb-3">
+            Average student quiz scores by course
+          </p>
+          <div style="position:relative;height:280px;">
+            <canvas id="c4"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Course Performance Table -->
+  <div class="row g-3">
+
+    <div class="col-12 col-xl-7">
+      <div class="card h-100 border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-1">Course Performance</h5>
+          <p class="small text-secondary mb-3">
+            Enrollment and learning outcome summary
+          </p>
+
+          <div class="table-responsive">
+            <table class="table align-middle table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Course</th>
+                  <th>Enrolled</th>
+                  <th>Completion</th>
+                  <th>Avg. Quiz</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {% for c in cs %}
+                <tr>
+                  <td>
+                    <div class="fw-semibold">{{ c.course_code }}</div>
+                    <div class="small text-secondary">{{ c.title }}</div>
+                  </td>
+
+                  <td>
+                    <span class="badge rounded-pill text-bg-primary">
+                      {{ c.enrolled }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="progress flex-grow-1"
+                           style="height:7px; min-width:45px;">
+                        <div class="progress-bar bg-success"
+                             role="progressbar"
+                             style="width:{{ [[c.completion|float, 0]|max, 100]|min }}%;"
+                             aria-valuenow="{{ c.completion }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                      </div>
+                      <small>{{ c.completion }}%</small>
+                    </div>
+                  </td>
+
+                  <td class="fw-semibold">
+                    {% if c.avg_score is not none %}
+                      {{ c.avg_score }}%
+                    {% else %}
+                      <span class="text-secondary">—</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="4" class="text-center py-5 text-secondary">
+                    <div class="fs-2 mb-2">📚</div>
+                    No courses available yet.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Inactive Students -->
+    <div class="col-12 col-xl-5">
+      <div class="card h-100 border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+
+          <div class="d-flex align-items-start gap-3 mb-3">
+            <div class="rounded-3 bg-warning-subtle p-3 fs-4">⏳</div>
+            <div>
+              <h5 class="fw-bold mb-1">Inactive Students</h5>
+              <p class="small text-secondary mb-0">
+                Enrolled students inactive for 14+ days
+              </p>
+            </div>
+          </div>
+
+          <div class="list-group list-group-flush">
+            {% for s in idle %}
+            <div class="list-group-item px-0 py-3">
+              <div class="d-flex align-items-start gap-3">
+                <div class="rounded-circle bg-primary-subtle text-primary
+                            d-flex align-items-center justify-content-center
+                            fw-bold flex-shrink-0"
+                     style="width:42px;height:42px;">
+                  {{ (s.full_name or '?')[0]|upper }}
+                </div>
+
+                <div class="flex-grow-1">
+                  <div class="fw-semibold">{{ s.full_name }}</div>
+                  <div class="small text-secondary">
+                    {{ s.student_code }}
+                  </div>
+                  <div class="small text-secondary mt-1">
+                    Last activity: {{ s.last_activity|dt }}
+                  </div>
+                </div>
+
+                <span class="badge text-bg-warning">Inactive</span>
+              </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+              <div class="fs-1 mb-2">🎉</div>
+              <div class="fw-semibold">Everyone is active!</div>
+              <p class="small text-secondary mb-0">
+                No inactive students to display.
+              </p>
+            </div>
+            {% endfor %}
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+<script>
+(() => {
+  const d = {{ data|tojson }};
+
+  const palette = [
+    '#4F46E5', '#06B6D4', '#8B5CF6', '#10B981',
+    '#F59E0B', '#EC4899', '#3B82F6', '#14B8A6',
+    '#F97316', '#6366F1'
+  ];
+
+  function mk(id, type, labels, vals, label) {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+
+    const isLine = type === 'line';
+
+    new Chart(canvas, {
+      type: type,
+      data: {
+        labels: labels,
+        datasets: [{
+          label: label,
+          data: vals,
+          backgroundColor: isLine
+            ? 'rgba(79, 70, 229, 0.12)'
+            : labels.map((_, i) => palette[i % palette.length]),
+          borderColor: isLine ? '#4F46E5' : labels.map(
+            (_, i) => palette[i % palette.length]
+          ),
+          borderWidth: isLine ? 3 : 1,
+          borderRadius: isLine ? 0 : 7,
+          tension: 0.35,
+          fill: isLine,
+          pointRadius: isLine ? 3 : 0,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: '#111827',
+            padding: 12,
+            cornerRadius: 8
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              maxRotation: 35,
+              minRotation: 0
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(148, 163, 184, 0.15)'
+            }
+          }
+        }
+      }
+    });
+  }
+
+  mk('c1', 'bar', d.titles, d.enrolled, 'Enrolled');
+  mk('c2', 'bar', d.titles, d.completion, 'Completion %');
+  mk('c3', 'line', d.days, d.daily, 'Lessons completed');
+  mk('c4', 'bar', d.titles, d.scores, 'Average quiz score %');
+})();
+</script>
+{% endblock %}

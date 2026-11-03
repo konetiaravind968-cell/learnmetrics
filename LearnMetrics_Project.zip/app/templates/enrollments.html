@@ -1,0 +1,246 @@
+
+{% extends "base.html" %}
+{% block title %}Enrollment Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Enrollment Management</h2>
+        <p class="text-muted mb-0">
+            Enroll individual students or register an entire group for a course.
+        </p>
+    </div>
+
+    <!-- Enrollment Forms -->
+    <div class="row g-4 mb-4">
+
+        <!-- Single Student Enrollment -->
+        <div class="col-12 col-xl-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-person-plus fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Enroll One Student</h5>
+                            <p class="text-muted small mb-0">
+                                Register a student in a selected course.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form method="post" class="row g-3">
+                        {{ csrf() }}
+                        <input type="hidden" name="mode" value="one">
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Student ID</label>
+                            <input
+                                class="form-control"
+                                name="student_code"
+                                placeholder="Enter student ID"
+                                required
+                            >
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Select Course</label>
+                            <select class="form-select" name="course_id" required>
+                                {% for c in courses %}
+                                <option value="{{ c.id }}">
+                                    {{ c.course_code }} - {{ c.title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if not courses %}
+                            <div class="form-text text-danger">
+                                No courses are available. Create a course first.
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12 pt-2">
+                            <button
+                                type="submit"
+                                class="btn btn-primary px-4"
+                                {% if not courses %}disabled{% endif %}
+                            >
+                                <i class="bi bi-person-check me-2"></i>
+                                Enroll Student
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Enrollment -->
+        <div class="col-12 col-xl-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="rounded-3 p-3 bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-people fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Bulk Enrollment</h5>
+                            <p class="text-muted small mb-0">
+                                Enroll matching students in one operation.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form method="post"
+                          class="row g-3"
+                          data-confirm="Enroll every matching student in the selected course?">
+                        {{ csrf() }}
+                        <input type="hidden" name="mode" value="bulk">
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Select Course</label>
+                            <select class="form-select" name="course_id" required>
+                                {% for c in courses %}
+                                <option value="{{ c.id }}">
+                                    {{ c.course_code }} - {{ c.title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-7">
+                            <label class="form-label fw-semibold">Department</label>
+                            <select class="form-select" name="department">
+                                <option value="">All departments</option>
+                                {% for d in depts %}
+                                <option value="{{ d }}">{{ d }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-5">
+                            <label class="form-label fw-semibold">Semester</label>
+                            <input
+                                class="form-control"
+                                name="semester"
+                                placeholder="Optional"
+                            >
+                        </div>
+
+                        <div class="col-12 pt-2">
+                            <button
+                                type="submit"
+                                class="btn btn-success px-4"
+                                {% if not courses %}disabled{% endif %}
+                            >
+                                <i class="bi bi-people-fill me-2"></i>
+                                Enroll Group
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Enrollments -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 px-4 pt-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h5 class="fw-bold mb-1">Recent Enrollments</h5>
+                    <p class="text-muted small mb-0">
+                        Showing the latest 100 enrollment records.
+                    </p>
+                </div>
+                <span class="badge rounded-pill text-bg-primary">
+                    {{ rows|length }} records
+                </span>
+            </div>
+        </div>
+
+        <div class="card-body px-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="py-3">Student</th>
+                            <th>Course</th>
+                            <th>Enrollment Date</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for r in rows %}
+                        <tr>
+                            <td class="py-3">
+                                <div class="fw-semibold">{{ r.full_name }}</div>
+                                <small class="text-muted">{{ r.student_code }}</small>
+                            </td>
+
+                            <td>
+                                <span class="fw-medium">{{ r.course_code }}</span>
+                            </td>
+
+                            <td>{{ r.enrolled_at|dt }}</td>
+
+                            <td>
+                                {% if r.status == 'active' %}
+                                <span class="badge rounded-pill text-bg-success">
+                                    Active
+                                </span>
+                                {% elif r.status == 'completed' %}
+                                <span class="badge rounded-pill text-bg-primary">
+                                    Completed
+                                </span>
+                                {% else %}
+                                <span class="badge rounded-pill text-bg-secondary">
+                                    {{ r.status|title }}
+                                </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-end">
+                                {% if r.status == 'active' %}
+                                <form
+                                    method="post"
+                                    action="{{ url_for('admin.enrollment_drop', eid=r.id) }}"
+                                    data-confirm="End this enrollment?"
+                                    class="d-inline"
+                                >
+                                    {{ csrf() }}
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-person-dash me-1"></i>
+                                        End Enrollment
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-muted small">No action</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <i class="bi bi-people display-5 text-muted"></i>
+                                <h6 class="fw-bold mt-3">No enrollments yet</h6>
+                                <p class="text-muted mb-0">
+                                    Use one of the forms above to enroll students.
+                                </p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+```

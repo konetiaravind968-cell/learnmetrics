@@ -1,0 +1,142 @@
+
+{% extends "base.html" %}
+
+{% block title %}Sign In | LearnMetrics{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-md-5">
+    <div class="row justify-content-center align-items-center">
+        <div class="col-12 col-md-8 col-lg-5 col-xl-4">
+
+            <!-- Brand -->
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center
+                            rounded-4 bg-primary bg-opacity-10 text-primary mb-3"
+                     style="width: 76px; height: 76px;">
+                    <i class="bi bi-mortarboard-fill display-5"></i>
+                </div>
+
+                <h2 class="fw-bold mb-1">LearnMetrics</h2>
+                <p class="text-muted mb-0">
+                    E-Learning Course Analytics System
+                </p>
+            </div>
+
+            <!-- Login Card -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+
+                    <div class="mb-4">
+                        <h4 class="fw-bold mb-2">Welcome back!</h4>
+                        <p class="text-muted mb-0">
+                            Sign in to access your learning dashboard.
+                        </p>
+                    </div>
+
+                    <form method="post">
+                        {{ csrf() }}
+
+                        <div class="mb-3">
+                            <label for="identifier" class="form-label fw-semibold">
+                                Student ID, Staff ID or Email
+                            </label>
+
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-person text-muted"></i>
+                                </span>
+
+                                <input
+                                    class="form-control"
+                                    id="identifier"
+                                    name="identifier"
+                                    type="text"
+                                    placeholder="Enter your ID or email"
+                                    required
+                                    autofocus
+                                    autocomplete="username"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="password" class="form-label fw-semibold">
+                                Password
+                            </label>
+
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-lock text-muted"></i>
+                                </span>
+
+                                <input
+                                    class="form-control"
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    placeholder="Enter your password"
+                                    required
+                                    autocomplete="current-password"
+                                >
+
+                                <button
+                                    class="btn btn-outline-secondary"
+                                    type="button"
+                                    id="togglePassword"
+                                    aria-label="Show password"
+                                    aria-pressed="false"
+                                >
+                                    <i class="bi bi-eye" id="passwordIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Sign In
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <small class="text-muted">
+                            <i class="bi bi-shield-lock me-1"></i>
+                            Sign in using your registered account credentials.
+                        </small>
+                    </div>
+
+                </div>
+            </div>
+
+            <p class="text-center text-muted small mt-4 mb-0">
+                LearnMetrics · E-Learning Analytics
+            </p>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const passwordInput = document.getElementById('password');
+    const toggleButton = document.getElementById('togglePassword');
+    const passwordIcon = document.getElementById('passwordIcon');
+
+    if (!passwordInput || !toggleButton || !passwordIcon) return;
+
+    toggleButton.addEventListener('click', function () {
+        const showPassword = passwordInput.type === 'password';
+
+        passwordInput.type = showPassword ? 'text' : 'password';
+        passwordIcon.className = showPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+        toggleButton.setAttribute('aria-pressed', String(showPassword));
+        toggleButton.setAttribute(
+            'aria-label',
+            showPassword ? 'Hide password' : 'Show password'
+        );
+    });
+})();
+</script>
+{% endblock %}
+```

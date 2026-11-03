@@ -1,0 +1,202 @@
+
+{% extends "base.html" %}
+
+{% block title %}Excel Import & Reports{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Excel Import & Reports</h2>
+        <p class="text-muted mb-0">
+            Import academic data in bulk and export reports for analysis.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Excel Import -->
+        <div class="col-12 col-xl-7">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                <div class="card-header bg-transparent border-0 px-4 pt-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 p-3 bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-file-earmark-spreadsheet fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Import from Excel</h5>
+                            <p class="text-muted small mb-0">
+                                Upload your workbook to add or update records.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <div class="alert alert-info border-0 rounded-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Existing codes are updated and new codes are added, according
+                        to the import process configured in your application.
+                    </div>
+
+                    <h6 class="fw-bold mb-3">Supported workbook sheets</h6>
+
+                    <div class="border rounded-3 p-3 mb-3">
+                        <div class="d-flex gap-2 align-items-start">
+                            <i class="bi bi-people text-primary fs-5"></i>
+                            <div>
+                                <div class="fw-semibold">Students</div>
+                                <p class="small text-muted mb-1">
+                                    student_code, full_name, email, department, semester
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border rounded-3 p-3 mb-3">
+                        <div class="d-flex gap-2 align-items-start">
+                            <i class="bi bi-person-badge text-info fs-5"></i>
+                            <div>
+                                <div class="fw-semibold">Staff</div>
+                                <p class="small text-muted mb-1">
+                                    staff_code, full_name, email, department
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border rounded-3 p-3 mb-4">
+                        <div class="d-flex gap-2 align-items-start">
+                            <i class="bi bi-journal-bookmark text-success fs-5"></i>
+                            <div>
+                                <div class="fw-semibold">Courses</div>
+                                <p class="small text-muted mb-0">
+                                    course_code, title, description, category, difficulty,
+                                    duration_hours, instructor_code, published
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {{ csrf() }}
+
+                        <label for="excelFile" class="form-label fw-semibold">
+                            Select Excel workbook (.xlsx)
+                        </label>
+
+                        <input
+                            class="form-control mb-3"
+                            id="excelFile"
+                            type="file"
+                            name="file"
+                            accept=".xlsx"
+                            required
+                        >
+
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-cloud-arrow-up me-2"></i>
+                                Import Workbook
+                            </button>
+
+                            <span class="small text-muted">
+                                <i class="bi bi-file-earmark-excel me-1"></i>
+                                Excel .xlsx format
+                            </span>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <h6 class="fw-bold">
+                        <i class="bi bi-lightbulb text-warning me-2"></i>
+                        Important notes
+                    </h6>
+
+                    <ul class="small text-muted mb-0">
+                        <li class="mb-2">
+                            Semester can be entered as a number from 1–8 or as a
+                            Roman numeral from I–VIII, as supported by your importer.
+                        </li>
+                        <li class="mb-2">
+                            Use the sample workbook in your project's
+                            <code>data</code> folder to follow the expected format.
+                        </li>
+                        <li>
+                            After importing students, run
+                            <code>python manage.py create-logins</code>
+                            if your project uses this command to create student logins.
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Excel Export -->
+        <div class="col-12 col-xl-5">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                <div class="card-header bg-transparent border-0 px-4 pt-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-download fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Export & Reports</h5>
+                            <p class="text-muted small mb-0">
+                                Download your records for reporting and analysis.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="d-grid gap-3">
+
+                        {% for k, label in [
+                            ('students', 'Students'),
+                            ('staff', 'Staff'),
+                            ('courses', 'Courses'),
+                            ('enrollments', 'Enrollments'),
+                            ('progress', 'Student Progress Report — All Courses')
+                        ] %}
+
+                        <a
+                            class="btn btn-outline-primary text-start p-3 d-flex align-items-center gap-3"
+                            href="{{ url_for('admin.export', kind=k) }}"
+                        >
+                            <i class="bi bi-file-earmark-excel fs-4"></i>
+
+                            <span class="flex-grow-1">
+                                <span class="d-block fw-semibold">{{ label }}</span>
+                                <small class="text-muted">
+                                    Download Excel report
+                                </small>
+                            </span>
+
+                            <i class="bi bi-download"></i>
+                        </a>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="alert alert-light border mt-4 mb-0">
+                        <i class="bi bi-bar-chart-line me-2 text-primary"></i>
+                        <span class="small text-muted">
+                            Use exported reports to review enrollment records,
+                            student progress and course information.
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

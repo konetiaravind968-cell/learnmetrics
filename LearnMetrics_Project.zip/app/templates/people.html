@@ -1,0 +1,241 @@
+
+{% extends "base.html" %}
+{% from '_m.html' import pager %}
+
+{% block title %}{{ P.title }} | LearnMetrics{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">{{ P.title }}</h2>
+            <p class="text-muted mb-0">
+                Manage profiles, login access and account status.
+            </p>
+        </div>
+
+        <a class="btn btn-primary px-4"
+           href="{{ url_for('admin.person_new', kind=kind) }}">
+            <i class="bi bi-person-plus me-2"></i>
+            Add {{ kind|title }}
+        </a>
+    </div>
+
+    <!-- Summary -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary">
+                        <i class="bi bi-people fs-3"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Matching Records</div>
+                        <h3 class="fw-bold mb-0">{{ total }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="rounded-3 p-3 bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-shield-check fs-3"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Account Management</div>
+                        <div class="fw-semibold">Login & Access Control</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- People Table -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-transparent border-0 px-4 pt-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h5 class="fw-bold mb-1">All {{ kind|title }}s</h5>
+                    <p class="text-muted small mb-0">
+                        Search and manage registered profiles.
+                    </p>
+                </div>
+                <span class="badge rounded-pill text-bg-light border">
+                    {{ total }} records
+                </span>
+            </div>
+        </div>
+
+        <div class="card-body px-4">
+
+            <!-- Search -->
+            <form class="row g-2 mb-4" method="get">
+                <div class="col-12 col-md">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input
+                            class="form-control"
+                            name="q"
+                            value="{{ q }}"
+                            placeholder="Search ID, name or email"
+                            aria-label="Search ID, name or email"
+                        >
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-auto">
+                    <button class="btn btn-outline-primary w-100" type="submit">
+                        Search
+                    </button>
+                </div>
+
+                {% if q %}
+                <div class="col-12 col-md-auto">
+                    <a href="{{ url_for('admin.people', kind=kind) }}"
+                       class="btn btn-outline-secondary w-100">
+                        Clear
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="py-3">ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Department</th>
+                            {% if kind == 'student' %}
+                            <th>Semester</th>
+                            {% endif %}
+                            <th>Login Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for r in rows %}
+                        <tr>
+                            <td class="py-3">
+                                <span class="fw-semibold">{{ r.code }}</span>
+                            </td>
+
+                            <td>
+                                <div class="fw-semibold">{{ r.full_name }}</div>
+                            </td>
+
+                            <td>{{ r.email or '-' }}</td>
+
+                            <td>{{ r.department or '-' }}</td>
+
+                            {% if kind == 'student' %}
+                            <td>
+                                <span class="badge rounded-pill text-bg-light border">
+                                    {{ r.semester or '-' }}
+                                </span>
+                            </td>
+                            {% endif %}
+
+                            <td>
+                                {% if r.uid %}
+                                    {% if r.active %}
+                                    <span class="badge rounded-pill text-bg-success">
+                                        Active
+                                    </span>
+                                    {% else %}
+                                    <span class="badge rounded-pill text-bg-secondary">
+                                        Deactivated
+                                    </span>
+                                    {% endif %}
+                                {% else %}
+                                <span class="badge rounded-pill text-bg-warning">
+                                    No Login
+                                </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
+
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="{{ url_for('admin.person_edit', kind=kind, rid=r.id) }}">
+                                        <i class="bi bi-pencil me-1"></i>
+                                        Edit
+                                    </a>
+
+                                    <form method="post"
+                                          action="{{ url_for('admin.person_reset', kind=kind, rid=r.id) }}"
+                                          data-confirm="{{ 'Create a new temporary password for ' ~ r.full_name ~ '?' }}"
+                                          class="d-inline">
+                                        {{ csrf() }}
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-key me-1"></i>
+                                            {{ 'Reset Password' if r.uid else 'Create Login' }}
+                                        </button>
+                                    </form>
+
+                                    {% if r.uid %}
+                                    <form method="post"
+                                          action="{{ url_for('admin.person_toggle', kind=kind, rid=r.id) }}"
+                                          data-confirm="{{ 'Deactivate' if r.active else 'Activate' }} {{ r.full_name }}?"
+                                          class="d-inline">
+                                        {{ csrf() }}
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-warning">
+                                            {{ 'Deactivate' if r.active else 'Activate' }}
+                                        </button>
+                                    </form>
+                                    {% endif %}
+
+                                    <form method="post"
+                                          action="{{ url_for('admin.person_delete', kind=kind, rid=r.id) }}"
+                                          data-confirm="Permanently delete {{ r.full_name }}?"
+                                          class="d-inline">
+                                        {{ csrf() }}
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash me-1"></i>
+                                            Delete
+                                        </button>
+                                    </form>
+
+                                </div>
+                            </td>
+                        </tr>
+
+                    {% else %}
+                        <tr>
+                            <td colspan="{{ 7 if kind == 'student' else 6 }}"
+                                class="text-center py-5">
+                                <i class="bi bi-search display-5 text-muted"></i>
+                                <h6 class="fw-bold mt-3">No records found</h6>
+                                <p class="text-muted mb-0">
+                                    Try a different search or add a new profile.
+                                </p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-3">
+                {{ pager(page, pages, prev, nxt) }}
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+```

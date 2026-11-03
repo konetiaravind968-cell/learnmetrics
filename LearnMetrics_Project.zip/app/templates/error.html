@@ -1,0 +1,56 @@
+
+{% extends "base.html" %}
+
+{% block title %}Error {{ code }} | LearnMetrics{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4 p-md-5">
+
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center
+                                rounded-circle bg-danger bg-opacity-10 text-danger"
+                         style="width: 90px; height: 90px;">
+                        <i class="bi bi-exclamation-triangle display-5"></i>
+                    </div>
+                </div>
+
+                <p class="text-uppercase text-muted small fw-semibold mb-2">
+                    LearnMetrics
+                </p>
+
+                <h1 class="display-4 fw-bold text-danger mb-2">
+                    {{ code }}
+                </h1>
+
+                <h4 class="fw-bold mb-3">Oops! Something went wrong.</h4>
+
+                <p class="text-muted mb-4">
+                    {{ msg }}
+                </p>
+
+                <div class="d-flex justify-content-center flex-wrap gap-2">
+                    <a href="{{ url_for('auth.index') }}"
+                       class="btn btn-primary px-4">
+                        <i class="bi bi-house-door me-2"></i>
+                        Go to Home
+                    </a>
+
+                    <button type="button"
+                            class="btn btn-outline-secondary px-4"
+                            onclick="history.back()">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Go Back
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+```

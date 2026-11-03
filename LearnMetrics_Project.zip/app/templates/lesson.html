@@ -1,0 +1,194 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ l.title }} | LearnMetrics{% endblock %}
+
+{% block content %}
+<div class="container py-3 py-md-4">
+
+    <!-- Back Navigation -->
+    <div class="mb-4">
+        <a href="{{ url_for('student.course', cid=l.course_id) }}"
+           class="text-decoration-none text-muted">
+            <i class="bi bi-arrow-left me-2"></i>
+            Back to Course
+        </a>
+    </div>
+
+    <!-- Lesson Header -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4 p-md-5">
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+                <div>
+                    <span class="badge rounded-pill text-bg-primary mb-3">
+                        <i class="bi bi-book me-1"></i>
+                        Learning Module
+                    </span>
+
+                    <h2 class="fw-bold mb-2">{{ l.title }}</h2>
+
+                    <p class="text-muted mb-0">
+                        Study the material below and mark the lesson complete
+                        when you finish.
+                    </p>
+                </div>
+
+                {% if done %}
+                <span class="badge rounded-pill text-bg-success p-2">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Completed
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Content -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-3 p-md-4">
+
+            {% if embed %}
+            <div class="ratio ratio-16x9 rounded-3 overflow-hidden mb-4">
+                <iframe
+                    src="https://www.youtube.com/embed/{{ embed }}"
+                    allowfullscreen
+                    loading="lazy"
+                    title="{{ l.title }}"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                ></iframe>
+            </div>
+
+            {% elif l.content_url %}
+            <div class="rounded-3 border p-4 mb-4 text-center">
+                <i class="bi bi-file-earmark-text display-4 text-primary"></i>
+                <h5 class="fw-bold mt-3">Learning Material</h5>
+                <p class="text-muted">
+                    Open the linked resource to continue your learning.
+                </p>
+
+                <a class="btn btn-outline-primary"
+                   href="{{ l.content_url }}"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    <i class="bi bi-box-arrow-up-right me-2"></i>
+                    Open Learning Material
+                </a>
+            </div>
+            {% endif %}
+
+            {% if l.body %}
+            <section>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-journal-text fs-4 text-primary"></i>
+                    <h5 class="fw-bold mb-0">Lesson Notes</h5>
+                </div>
+
+                <div class="lesson-content rounded-3 p-3 p-md-4"
+                     style="white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.85;">{{ l.body }}</div>
+            </section>
+            {% endif %}
+
+            {% if not embed and not l.content_url and not l.body %}
+            <div class="text-center py-5">
+                <i class="bi bi-file-earmark-x display-4 text-muted"></i>
+                <h5 class="fw-bold mt-3">No learning material available</h5>
+                <p class="text-muted mb-0">
+                    Please contact your instructor for lesson content.
+                </p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- Lesson Navigation and Completion -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-3 p-md-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+
+                <div>
+                    <div class="fw-semibold">Lesson Progress</div>
+                    <small class="text-muted">
+                        {% if done %}
+                            You have completed this lesson.
+                        {% else %}
+                            Finish the material and mark this lesson complete.
+                        {% endif %}
+                    </small>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    {% if prev %}
+                    <a class="btn btn-outline-secondary"
+                       href="{{ url_for('student.lesson', lid=prev) }}">
+                        <i class="bi bi-chevron-left me-1"></i>
+                        Previous
+                    </a>
+                    {% endif %}
+
+                    {% if done %}
+                    <span class="btn btn-success disabled">
+                        <i class="bi bi-check-circle me-1"></i>
+                        Completed
+                    </span>
+
+                    {% if nxt %}
+                    <a class="btn btn-primary"
+                       href="{{ url_for('student.lesson', lid=nxt) }}">
+                        Next Lesson
+                        <i class="bi bi-chevron-right ms-1"></i>
+                    </a>
+                    {% endif %}
+
+                    {% else %}
+                    <form method="post"
+                          action="{{ url_for('student.complete', lid=l.id) }}">
+                        {{ csrf() }}
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2-circle me-2"></i>
+                            Mark Complete{% if nxt %} & Next{% endif %}
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const pingUrl = {{ url_for('student.ping', lid=l.id)|tojson }};
+    const csrfToken = {{ csrf_token()|tojson }};
+
+    async function sendActivityPing() {
+        if (document.visibilityState !== 'visible') return;
+
+        try {
+            await fetch(pingUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-Token': csrfToken
+                }
+            });
+        } catch (error) {
+            console.warn('Lesson activity ping failed.');
+        }
+    }
+
+    const activityTimer = setInterval(sendActivityPing, 30000);
+
+    document.addEventListener('visibilitychange', sendActivityPing);
+
+    window.addEventListener('pagehide', function () {
+        clearInterval(activityTimer);
+    });
+})();
+</script>
+{% endblock %}
+```

@@ -1,0 +1,172 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ z.title }} | LearnMetrics{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Quiz Header -->
+    <div class="card border-0 shadow-sm mb-4"
+         style="border-radius: 18px; overflow: hidden;">
+        <div class="card-body p-4"
+             style="background: linear-gradient(135deg, #172554, #4338ca); color: white;">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="rounded-3 p-3"
+                     style="background: rgba(255,255,255,.15);">
+                    <i class="bi bi-journal-check fs-3"></i>
+                </div>
+                <div>
+                    <div class="small text-white-50">LEARNMETRICS · QUIZ</div>
+                    <h3 class="mb-1">{{ z.title }}</h3>
+                    <div class="small text-white-50">
+                        Read each question carefully before submitting.
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-3">
+                <span class="badge rounded-pill px-3 py-2"
+                      style="background: rgba(255,255,255,.15);">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Pass mark: {{ z.pass_percent }}%
+                </span>
+                <span class="badge rounded-pill px-3 py-2"
+                      style="background: rgba(255,255,255,.15);">
+                    <i class="bi bi-list-ol me-1"></i>
+                    {{ qs|length }} questions
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="alert alert-info border-0 shadow-sm"
+         style="border-radius: 12px;">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        Select one answer for each question. Your answers will be checked
+        when you submit the quiz.
+    </div>
+
+    <!-- Quiz Form -->
+    <form method="post"
+          data-confirm="Are you sure you want to submit your quiz? You may not be able to change your answers afterward.">
+
+        {{ csrf() }}
+
+        {% for q in qs %}
+        <div class="card border-0 shadow-sm mb-4"
+             style="border-radius: 16px;">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 42px; height: 42px; background: #eef2ff; color: #4338ca; font-weight: 700;">
+                        {{ loop.index }}
+                    </div>
+
+                    <div class="flex-grow-1">
+                        <h5 class="mb-2" style="line-height: 1.6;">
+                            {{ q.question_text }}
+                        </h5>
+
+                        <span class="badge rounded-pill text-bg-light border">
+                            <i class="bi bi-star me-1"></i>
+                            {{ q.marks }} marks
+                        </span>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    {% for key, opt in [
+                        ('A', q.option_a),
+                        ('B', q.option_b),
+                        ('C', q.option_c),
+                        ('D', q.option_d)
+                    ] %}
+                        {% if opt %}
+                        <label for="q{{ q.id }}{{ key }}"
+                               class="d-flex align-items-start gap-3 p-3 border rounded-3 quiz-option"
+                               style="cursor: pointer; transition: background .2s, border-color .2s;">
+
+                            <input
+                                class="form-check-input mt-1 flex-shrink-0"
+                                type="radio"
+                                name="q{{ q.id }}"
+                                id="q{{ q.id }}{{ key }}"
+                                value="{{ key }}"
+                                style="width: 18px; height: 18px;">
+
+                            <span class="badge rounded-pill text-bg-light border">
+                                {{ key }}
+                            </span>
+
+                            <span style="line-height: 1.6;">{{ opt }}</span>
+                        </label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            </div>
+        </div>
+        {% else %}
+        <div class="card border-0 shadow-sm text-center p-5"
+             style="border-radius: 16px;">
+            <i class="bi bi-clipboard-x display-4 text-muted mb-3"></i>
+            <h5>No questions available</h5>
+            <p class="text-muted mb-0">
+                Your instructor has not added questions to this quiz yet.
+            </p>
+        </div>
+        {% endfor %}
+
+        {% if qs %}
+        <div class="card border-0 shadow-sm mt-4"
+             style="border-radius: 16px;">
+            <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div>
+                    <h6 class="mb-1">
+                        <i class="bi bi-shield-check me-2 text-success"></i>
+                        Ready to submit?
+                    </h6>
+                    <p class="text-muted small mb-0">
+                        Review your selected answers before submitting.
+                    </p>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary btn-lg px-4"
+                        style="border-radius: 10px;">
+                    <i class="bi bi-send me-2"></i>
+                    Submit Quiz
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+    </form>
+</div>
+
+<style>
+    .quiz-option {
+        background: var(--bs-body-bg, #fff);
+    }
+
+    .quiz-option:hover {
+        background: #f5f7ff;
+        border-color: #818cf8 !important;
+    }
+
+    .quiz-option:has(input:checked) {
+        background: #eef2ff;
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 1px #6366f1;
+    }
+
+    .quiz-option input {
+        accent-color: #4f46e5;
+    }
+</style>
+{% endblock %}
+```
